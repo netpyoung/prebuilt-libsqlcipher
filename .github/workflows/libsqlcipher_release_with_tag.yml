@@ -1,0 +1,224 @@
+name: Release with Tag for libsqlcipher
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  ## ======================================================================================================
+  release:
+    name: Write Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get Tagname
+        id: tag_name
+        run: |
+          echo ::set-output name=current_version::${GITHUB_REF#refs/tags/v}
+        shell: bash
+
+      - name: Changelog Reader
+        id: changelog_reader
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ steps.tag_name.outputs.current_version }}
+          path: ./CHANGELOG.md
+
+      - name: Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref }}
+          body: ${{ steps.changelog_reader.outputs.changes }}
+
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+
+  ## ======================================================================================================
+  upload_asset_windows_x86:
+    needs: release
+    name: Upload asset on Windows (x86)
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install openssl(x86)
+        run: choco install openssl -y --x86
+
+      - name: Prepare build system(MSYS2)
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW32
+          install: >-
+            git
+            base-devel
+            mingw-w64-i686-gcc
+            tcl
+
+      - name: Run Buildscript
+        shell: msys2 {0}
+        run: sh ./build-on-windows-x86.sh
+
+      
+      - name: Install packages
+        run: choco install 7zip.portable
+
+      - name: Run Zip
+        run: 7z a -r lib.zip output
+        ## powershell Compress-Archive out x.zip
+
+      - name: Upload Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./lib.zip
+          asset_name: windows_x86.zip
+          asset_content_type: application/octet-stream
+
+  ## ======================================================================================================
+  upload_asset_windows_x86_64:
+    needs: release
+    name: Upload asset on Windows (x86_64)
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install openssl(x86_64)
+        run: choco install openssl -y --x86_64
+
+      - name: Prepare build system(MSYS2)
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            git
+            base-devel
+            mingw-w64-x86_64-gcc
+            tcl
+
+      - name: Run Buildscript
+        shell: msys2 {0}
+        run: sh ./build-on-windows-x86_64.sh
+
+      - name: Install packages
+        run: choco install 7zip.portable
+
+      - name: Run Zip
+        run: 7z a -r lib.zip output
+
+      - name: Upload Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./lib.zip
+          asset_name: windows_x86_64.zip
+          asset_content_type: application/octet-stream
+
+  ## ======================================================================================================
+  upload_asset_linux:
+    needs: release
+    name: Upload asset on Linux
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Dependency
+        run: |
+          sudo apt-get install -y tcl-dev
+          sudo apt-get install -y libssl-dev
+
+      - name: Run Buildscript
+        run: sh ./build-on-linux.sh
+
+      - name: Run Zip
+        run: zip -r lib.zip output/*
+
+      - name: Upload Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./lib.zip
+          asset_name: linux.zip
+          asset_content_type: application/octet-stream
+
+  ## ======================================================================================================
+  upload_asset_android:
+    needs: release
+    name: Upload asset on Linux (Android)
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1.0.6
+        with:
+          ndk-version: r21e
+
+      - name: Run Buildscript
+        run: sh ./build-on-linux-android.sh
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_NDK_TOOLCHAIN: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64
+
+      - name: Run Zip
+        run: zip -r lib.zip output/*
+
+      - name: Upload Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./lib.zip
+          asset_name: android.zip
+          asset_content_type: application/octet-stream
+
+  ## ======================================================================================================
+  upload_asset_macos_ios_tvos:
+    needs: release
+    name: Upload asset on macOS (macOS / iOS / tvOS)
+    runs-on: macos-10.15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Dependency
+        run: brew install coreutils automake
+
+      - name: Run Buildscript
+        run: sh ./build-on-mac.sh
+
+      - name: Run Zip
+        run: zip -r lib.zip output/*
+
+      - name: Upload Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./lib.zip
+          asset_name: macos_ios.zip
+          asset_content_type: application/octet-stream

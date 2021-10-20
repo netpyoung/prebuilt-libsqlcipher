@@ -1,0 +1,29 @@
+name: Build asset on Windows
+
+on: [push]
+
+jobs:
+  build_asset_windows:
+    name: Build asset on Windows
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install openssl(x86)
+        run: choco install openssl -y --x86
+
+      - name: Prepare build system(MSYS2)
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW32
+          install: >-
+            git
+            base-devel
+            mingw-w64-i686-gcc
+            tcl
+
+      - name: Run Buildscript
+        shell: msys2 {0}
+        run: sh ./build-on-windows-x86.sh

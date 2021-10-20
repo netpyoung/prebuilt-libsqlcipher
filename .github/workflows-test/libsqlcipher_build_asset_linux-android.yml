@@ -1,0 +1,24 @@
+name: Build asset on Linux (Android)
+
+on: [push]
+
+jobs:
+  build_asset_linux:
+    name: Build asset on Linux (Android)
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Android NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1.0.6
+        with:
+          ndk-version: r21e
+
+      - name: Run Buildscript
+        run: sh ./build-on-linux-android.sh
+        env:
+          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+          ANDROID_NDK_TOOLCHAIN: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64
+
