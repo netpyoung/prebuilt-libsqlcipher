@@ -220,5 +220,33 @@ jobs:
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
           asset_path: ./lib.zip
-          asset_name: macos_ios.zip
+          asset_name: macos_ios_tvos.zip
+          asset_content_type: application/octet-stream
+
+  ## ======================================================================================================
+  upload_asset_macos_arm64:
+    needs: release
+    name: Upload asset on macOS (arm64 only)
+    runs-on: macos-10.15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Dependency
+        run: brew install coreutils automake
+
+      - name: Run Buildscript
+        run: sh ./build-on-mac-arm64.sh
+
+      - name: Run Zip
+        run: zip -r lib.zip output/*
+
+      - name: Upload Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./lib.zip
+          asset_name: macos_arm64.zip
           asset_content_type: application/octet-stream
