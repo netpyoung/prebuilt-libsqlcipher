@@ -141,9 +141,15 @@ do
     export STRIP=${ANDROID_NDK_TOOLCHAIN}/bin/llvm-strip
 
     # configure
-    SQLCHIPER_CONFIGURE_OPTIONS="--with-crypto-lib=none \
-    -enable-tempstore=no \
+    SQLCHIPER_CONFIGURE_OPTIONS=" \
+    --with-pic \
     --disable-tcl \
+    --enable-shared=yes \
+    --enable-static=no \
+    --disable-readline \
+    --enable-tempstore=yes \
+    --enable-threadsafe=yes \
+    --with-crypto-lib=none \
     --host ${HOST} \
     "
 
@@ -158,16 +164,16 @@ do
     -lm \
     "
 
+    sed -i 's/for ac_option in --version -v -V -qversion; do/for ac_option in --version -v; do/' configure
+
     ./configure ${SQLCHIPER_CONFIGURE_OPTIONS} CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
 
     # compile
     make clean
     make sqlite3.c
-    make
 
-    mv .libs/libsqlcipher.a ${DIR_OUTPUT}/${ARCH}/
-    echo "=========================================================="
-    ls -al ${DIR_OUTPUT}/${ARCH}/
+    ${CC} ${CFLAGS} ${DIR_OUTPUT}/${ARCH}/libcrypto.a -shared -fPIC -lm sqlite3.c -o libsqlcipher.so
+    mv libsqlcipher.so ${DIR_OUTPUT}/${ARCH}/
 done
 
 

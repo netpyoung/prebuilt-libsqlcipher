@@ -110,9 +110,62 @@ libsqlcipher_fpath=`greadlink -f .libs/libsqlcipher.dylib`
 mkdir -p ${DIR_OUTPUT}/macOS/${ARCH}
 cp ${libsqlcipher_fpath} ${DIR_OUTPUT}/macOS/${ARCH}/sqlcipher.bundle
 
+##---------------------------------------------------------------------------------------------
+## macOS            (arm64)
+##---------------------------------------------------------------------------------------------
+echo "============================================================= macOS            (arm64)"
+git clean -Xdf
+
+# configure
+ARCH=arm64
+HOST="aarch64-apple-darwin"
+
+ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Versions/A/Headers/ Security
+ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/ CoreFoundation
+
+ISYSROOT=`xcrun --sdk macosx --show-sdk-path`
+
+CFLAGS=" \
+-arch ${ARCH}  \
+-target arm64-apple-macos \
+-isysroot ${ISYSROOT} \
+-mmacos-version-min=13.0 \
+-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include \
+"
+
+# mmacos-version-min, MACOSX_DEPLOYMENT_TARGET?
+./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+
+# compile
+make
+
+
+# cleanup
+unlink Security
+unlink CoreFoundation
+
+# copy
+# cp ./tmp/${VERSION}/sqlcipher-${VERSION}/.libs/libsqlcipher.0.dylib ./${VERSION}/macOS/sqlcipher.bundle
+libsqlcipher_fpath=`greadlink -f .libs/libsqlcipher.dylib`
+mkdir -p ${DIR_OUTPUT}/macOS/${ARCH}
+cp ${libsqlcipher_fpath} ${DIR_OUTPUT}/macOS/${ARCH}/sqlcipher.bundle
+
 #---------------------------------------------------------------------------------------------
-# macOS            (arm64)
+# lipo macOS (x86_64, arm64)
 #---------------------------------------------------------------------------------------------
+echo "=========================================================== lipo macOS (x86_64, arm64)"
+
+mkdir -p ${DIR_OUTPUT}/macOS/lipo
+
+lipo -create -output ${DIR_OUTPUT}/macOS/lipo/sqlcipher.bundle \
+  ${DIR_OUTPUT}/macOS/arm64/sqlcipher.bundle                   \
+  ${DIR_OUTPUT}/macOS/x86_64/sqlcipher.bundle
+
+lipo -info ${DIR_OUTPUT}/macOS/lipo/sqlcipher.bundle
+
+
+
+
 
 #---------------------------------------------------------------------------------------------
 # iOS              (armv7)
