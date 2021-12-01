@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 set -e
 
+# WARN(pyoung): This is Experiment build script which produce library files but It doesn't work.
+# ref: https://search.maven.org/artifact/net.zetetic/android-database-sqlcipher
+
 # [variable]
-VERSION=v4.4.3
+VERSION=v4.5.0
 ROOT=$(pwd)
 DIR_SOURCE=${ROOT}/sqlcipher
 DIR_OUTPUT=${ROOT}/output
