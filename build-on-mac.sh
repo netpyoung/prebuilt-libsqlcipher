@@ -27,7 +27,7 @@ set -e
 
 
 # [variable]
-VERSION=v4.4.3
+VERSION=v4.5.0
 ROOT=$(pwd)
 DIR_SOURCE=${ROOT}/sqlcipher
 DIR_OUTPUT=${ROOT}/output
@@ -40,11 +40,6 @@ SQLITE_CFLAGS=" \
 -DSQLITE_HAS_CODEC \
 -DSQLITE_THREADSAFE=1 \
 -DSQLITE_TEMP_STORE=2 \
-"
-
-LDFLAGS="\
--framework Security \
--framework Foundation \
 "
 
 COMPILE_OPTION=" \
@@ -69,8 +64,8 @@ export NM="${TOOLCHAIN_BIN}/nm"
 export LD="${TOOLCHAIN_BIN}/ld"
 
 # [src] libsodium
-git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git && cd $DIR_SOURCE
-
+git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git 
+cd $DIR_SOURCE
 
 
 ##---------------------------------------------------------------------------------------------
@@ -84,13 +79,19 @@ git clean -Xdf
 ARCH=x86_64
 HOST="x86_64-apple-darwin"
 
-ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Versions/A/Headers/ Security
-ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/ CoreFoundation
-
 CFLAGS=" \
 -arch ${ARCH}  \
 -mmacos-version-min=10.10 \
 -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks \
+"
+
+LDFLAGS="\
+-framework Security \
+-framework Foundation \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib \
 "
 
 # mmacos-version-min, MACOSX_DEPLOYMENT_TARGET?
@@ -101,8 +102,6 @@ make
 
 
 # cleanup
-unlink Security
-unlink CoreFoundation
 
 # copy
 # cp ./tmp/${VERSION}/sqlcipher-${VERSION}/.libs/libsqlcipher.0.dylib ./${VERSION}/macOS/sqlcipher.bundle
@@ -120,9 +119,6 @@ git clean -Xdf
 ARCH=arm64
 HOST="aarch64-apple-darwin"
 
-ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/Security.framework/Versions/A/Headers/ Security
-ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreFoundation.framework/Versions/A/Headers/ CoreFoundation
-
 ISYSROOT=`xcrun --sdk macosx --show-sdk-path`
 
 CFLAGS=" \
@@ -131,6 +127,8 @@ CFLAGS=" \
 -isysroot ${ISYSROOT} \
 -mmacos-version-min=13.0 \
 -I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks \
 "
 
 # mmacos-version-min, MACOSX_DEPLOYMENT_TARGET?
@@ -141,8 +139,6 @@ make
 
 
 # cleanup
-unlink Security
-unlink CoreFoundation
 
 # copy
 # cp ./tmp/${VERSION}/sqlcipher-${VERSION}/.libs/libsqlcipher.0.dylib ./${VERSION}/macOS/sqlcipher.bundle
@@ -187,6 +183,15 @@ CFLAGS="\
 -arch ${ARCH} \
 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
 -mios-version-min=${IOS_MIN_SDK_VERSION} \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks \
+"
+
+LDFLAGS="\
+-framework Security \
+-framework Foundation \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
@@ -222,6 +227,8 @@ CFLAGS="\
 -arch ${ARCH} \
 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
 -mios-version-min=${IOS_MIN_SDK_VERSION} \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
@@ -257,6 +264,8 @@ CFLAGS="\
 -arch ${ARCH} \
 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
 -mios-version-min=${IOS_MIN_SDK_VERSION} \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
@@ -291,6 +300,15 @@ CFLAGS="\
 -arch ${ARCH} \
 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
 -mios-version-min=${IOS_MIN_SDK_VERSION} \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/lib \
+"
+
+LDFLAGS="\
+-framework Security \
+-framework Foundation \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/lib \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
@@ -344,7 +362,17 @@ CFLAGS="\
 -arch ${ARCH} \
 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
 -mtvos-version-min=${TVOS_MIN_SDK_VERSION} \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/System/Library/Frameworks \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/usr/lib \
 "
+
+LDFLAGS="\
+-framework Security \
+-framework Foundation \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/System/Library/Frameworks \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/usr/lib \
+"
+
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
 
 # compile
@@ -376,6 +404,15 @@ CFLAGS="\
 -arch ${ARCH} \
 -isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
 -mtvos-version-min=${TVOS_MIN_SDK_VERSION} \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/System/Library/Frameworks \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/usr/lib \
+"
+
+LDFLAGS="\
+-framework Security \
+-framework Foundation \
+-F/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/System/Library/Frameworks \
+-L/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/usr/lib \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
