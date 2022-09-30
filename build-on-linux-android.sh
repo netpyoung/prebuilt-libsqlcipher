@@ -5,7 +5,7 @@ set -e
 # ref: https://search.maven.org/artifact/net.zetetic/android-database-sqlcipher
 
 # [variable]
-VERSION=v4.5.1
+VERSION=v4.5.2
 ROOT=$(pwd)
 DIR_SOURCE=${ROOT}/sqlcipher
 DIR_OUTPUT=${ROOT}/output
