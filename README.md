@@ -3,6 +3,7 @@
 :package: Prebuilt native SQLCipher for Unity3D
 
 - Prebuilt native [sqlcipher/sqlcipher](https://github.com/sqlcipher/sqlcipher) library for Unity3D.
+  - VERSION=v4.5.5
 - try [SqlCipher4Unity3D](https://github.com/netpyoung/SqlCipher4Unity3D).
 
 | Platforms | Arch        | action  | device tested? |
