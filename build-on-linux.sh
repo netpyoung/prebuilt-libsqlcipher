@@ -2,7 +2,7 @@
 set -e
 
 # [variable]
-VERSION=v4.5.3
+VERSION=v4.5.5
 ROOT=$(pwd)
 DIR_SOURCE=${ROOT}/sqlcipher
 DIR_OUTPUT=${ROOT}/output
