@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.0.7-github-test]
+
+- github action test test test
+
 ## [0.0.6]
 
 - libsqlcipher version v4.5.5
