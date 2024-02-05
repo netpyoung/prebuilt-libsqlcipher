@@ -15,7 +15,7 @@ MINIMUM_ANDROID_64_BIT_SDK_VERSION=21
 
 
 # [src] openssl
-OEPNSSL_VERSION=OpenSSL_1_1_1l
+OEPNSSL_VERSION=openssl-3.2.1
 git clone -b ${OEPNSSL_VERSION} --depth 1 https://github.com/openssl/openssl && cd openssl
 
 OPENSSL_CONFIGURE_OPTIONS="-fPIC -fstack-protector-all no-idea no-camellia \
