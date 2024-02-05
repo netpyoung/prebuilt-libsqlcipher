@@ -7,45 +7,6 @@ on:
 
 jobs:
   ## ======================================================================================================
-  upload_asset_windows_x86:
-    name: Upload asset on Windows (x86)
-    runs-on: windows-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install openssl(x86)
-        run: choco install openssl -y --version "3.2.1" --forceX86
-
-      - name: Prepare build system(MSYS2)
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          msystem: MINGW32
-          install: >-
-            git
-            base-devel
-            mingw-w64-i686-gcc
-            tcl
-
-      - name: Run Buildscript
-        shell: msys2 {0}
-        run: sh ./build-on-windows-x86.sh
-
-      - name: Install packages
-        run: choco install 7zip.portable
-
-      - name: Run Zip
-        run: 7z a -r windows_x86.zip output
-        ## powershell Compress-Archive out x.zip
-
-      - name: Upload Asset
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows_x86.zip
-          path: ./windows_x86.zip
-
-  ## ======================================================================================================
   upload_asset_windows_x86_64:
     name: Upload asset on Windows (x86_64)
     runs-on: windows-latest
@@ -75,13 +36,16 @@ jobs:
         run: choco install 7zip.portable
 
       - name: Run Zip
-        run: 7z a -r windows_x86_64.zip output
+        run: 7z a -r windows-x86_64.zip output
 
       - name: Upload Asset
         uses: actions/upload-artifact@v4
         with:
-          name: windows_x86_64.zip
-          path: ./windows_x86_64.zip
+          name: artifact-windows-x86_64
+          path: windows-x86_64.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
 
   ## ======================================================================================================
   upload_asset_linux:
@@ -98,44 +62,18 @@ jobs:
 
       - name: Run Buildscript
         run: sh ./build-on-linux.sh
-
+  
       - name: Run Zip
         run: zip -r linux.zip output/*
 
       - name: Upload Asset
         uses: actions/upload-artifact@v4
         with:
-          name: linux.zip
-          path: ./linux.zip
-
-  ## ======================================================================================================
-  upload_asset_android:
-    name: Upload asset on Linux (Android)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Android NDK
-        id: setup-ndk
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r21e
-
-      - name: Run Buildscript
-        run: sh ./build-on-linux-android.sh
-        env:
-          ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-          ANDROID_NDK_TOOLCHAIN: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64
-
-      - name: Run Zip
-        run: zip -r android.zip output/*
-
-      - name: Upload Asset
-        uses: actions/upload-artifact@v4
-        with:
-          name: android.zip
-          path: ./android.zip
+          name: artifact-linux
+          path: linux.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
 
   ## ======================================================================================================
   upload_asset_macos_ios_tvos:
@@ -157,31 +95,108 @@ jobs:
       - name: Upload Asset
         uses: actions/upload-artifact@v4
         with:
-          path: ./macos.zip
-          name: macos.zip
+          name: artifact-macos
+          path: macos.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+  ## ======================================================================================================
+  
+  # NOTE(pyoung): deprecated
+  # upload_asset_windows_x86:
+  #   name: Upload asset on Windows (x86)
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Install openssl(x86)
+  #       run: choco install openssl -y --version "3.2.1" --forceX86
+  #
+  #     - name: Prepare build system(MSYS2)
+  #       uses: msys2/setup-msys2@v2
+  #       with:
+  #         update: true
+  #         msystem: MINGW32
+  #         install: >-
+  #           git
+  #           base-devel
+  #           mingw-w64-i686-gcc
+  #           tcl
+  #
+  #     - name: Run Buildscript
+  #       shell: msys2 {0}
+  #       run: sh ./build-on-windows-x86.sh
+  #
+  #     - name: Install packages
+  #       run: choco install 7zip.portable
+  #
+  #     - name: Run Zip
+  #       run: 7z a -r windows_x86.zip output
+  #       ## powershell Compress-Archive out x.zip
+  #
+  #     - name: Upload Asset
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: windows_x86.zip
+  #         path: ./windows_x86.zip
+
+  ## ======================================================================================================
+  # NOTE(pyoung): deprecated
+  # upload_asset_android:
+  #   name: Upload asset on Linux (Android)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Android NDK
+  #       id: setup-ndk
+  #       uses: nttld/setup-ndk@v1
+  #       with:
+  #         ndk-version: r21e
+  #
+  #     - name: Run Buildscript
+  #       run: sh ./build-on-linux-android.sh
+  #       env:
+  #         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+  #         ANDROID_NDK_TOOLCHAIN: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64
+  #
+  #     - name: Run Zip
+  #       run: zip -r android.zip output/*
+  #
+  #     - name: Upload Asset
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: android.zip
+  #         path: ./android.zip
 
   ## ======================================================================================================
   release:
-    needs: [upload_asset_windows_x86, upload_asset_windows_x86_64, upload_asset_linux, upload_asset_android, upload_asset_macos_ios_tvos]
+    needs: [upload_asset_windows_x86_64, upload_asset_linux, upload_asset_macos_ios_tvos]
     name: Write Release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            CHANGELOG.md
 
       - name: Make Directory For Download Artifacts
         run: |
-          mkdir -p ~/downloads/artifacts/windows-x86
-          mkdir -p ~/downloads/artifacts/windows-x64
-          mkdir -p ~/downloads/artifacts/linux
-          mkdir -p ~/downloads/artifacts/android
-          mkdir -p ~/downloads/artifacts/macos
-  
+          mkdir -p download-artifacts
+
       - name: download asset linux
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: linux.zip
-          path: ~/downloads/artifacts/linux
+          path: download-artifacts
+
+      - name: Log artifact download
+        run: |
+          ls -alh
+          ls -alh download-artifacts
   
       - name: Get Tagname
         id: tag_name
@@ -197,15 +212,15 @@ jobs:
           path: ./CHANGELOG.md
 
       - name: Release
-        id: create_release
         uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           draft: true
           prerelease: false
-          release_name: ${{ github.ref }}
+          name: ${{ github.ref_name }}
           tag_name: ${{ github.ref }}
           body: ${{ steps.changelog_reader.outputs.changes }}
+          fail_on_unmatched_files: true
           files: |
-            ~/downloads/artifacts/linux/linux.zip
+            ./download-artifacts/artifact-linux/linux.zip
+            ./download-artifacts/artifact-windows-x86_64/windows-x86_64.zip
+            ./download-artifacts/artifact-macos/macos.zip
