@@ -34,23 +34,18 @@ jobs:
         shell: msys2 {0}
         run: sh ./build-on-windows-x86.sh
 
-      
       - name: Install packages
         run: choco install 7zip.portable
 
       - name: Run Zip
-        run: 7z a -r lib.zip output
+        run: 7z a -r windows_x86.zip output
         ## powershell Compress-Archive out x.zip
 
       - name: Upload Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./lib.zip
-          asset_name: windows_x86.zip
-          asset_content_type: application/octet-stream
+          name: windows_x86.zip
+          path: ./windows_x86.zip
 
   ## ======================================================================================================
   upload_asset_windows_x86_64:
@@ -82,17 +77,13 @@ jobs:
         run: choco install 7zip.portable
 
       - name: Run Zip
-        run: 7z a -r lib.zip output
+        run: 7z a -r windows_x86_64.zip output
 
       - name: Upload Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./lib.zip
-          asset_name: windows_x86_64.zip
-          asset_content_type: application/octet-stream
+          name: windows_x86_64.zip
+          path: ./windows_x86_64.zip
 
   ## ======================================================================================================
   upload_asset_linux:
@@ -111,17 +102,13 @@ jobs:
         run: sh ./build-on-linux.sh
 
       - name: Run Zip
-        run: zip -r lib.zip output/*
+        run: zip -r linux.zip output/*
 
       - name: Upload Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./lib.zip
-          asset_name: linux.zip
-          asset_content_type: application/octet-stream
+          name: linux.zip
+          path: ./linux.zip
 
   ## ======================================================================================================
   upload_asset_android:
@@ -144,17 +131,13 @@ jobs:
           ANDROID_NDK_TOOLCHAIN: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64
 
       - name: Run Zip
-        run: zip -r lib.zip output/*
+        run: zip -r android.zip output/*
 
       - name: Upload Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./lib.zip
-          asset_name: android.zip
-          asset_content_type: application/octet-stream
+          name: android.zip
+          path: ./android.zip
 
   ## ======================================================================================================
   upload_asset_macos_ios_tvos:
@@ -171,17 +154,13 @@ jobs:
         run: sh ./build-on-mac.sh
 
       - name: Run Zip
-        run: zip -r lib.zip output/*
+        run: zip -r macos.zip output/*
 
       - name: Upload Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-artifact@v3
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./lib.zip
-          asset_name: macos_ios_tvos.zip
-          asset_content_type: application/octet-stream
+          path: ./macos.zip
+          name: macos.zip
 
   ## ======================================================================================================
   release:
@@ -192,6 +171,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Make Directory For Download Artifacts
+        run: |
+          mkdir -p ~/downloads/artifacts/windows-x86
+          mkdir -p ~/downloads/artifacts/windows-x64
+          mkdir -p ~/downloads/artifacts/linux
+          mkdir -p ~/downloads/artifacts/android
+          mkdir -p ~/downloads/artifacts/macos
+  
+      - name: download asset linux
+        uses: actions/download-artifact@v3
+        with:
+          name: linux.zip
+          path: ~/downloads/artifacts/linux
+  
       - name: Get Tagname
         id: tag_name
         run: |
@@ -207,15 +200,14 @@ jobs:
 
       - name: Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          draft: false
+          draft: true
           prerelease: false
           release_name: ${{ github.ref }}
           tag_name: ${{ github.ref }}
           body: ${{ steps.changelog_reader.outputs.changes }}
-
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
+          files: |
+            ~/downloads/artifacts/linux/linux.zip
