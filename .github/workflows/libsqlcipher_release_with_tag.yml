@@ -38,7 +38,7 @@ jobs:
       - name: Run Zip
         run: 7z a -r windows-x86_64.zip output
 
-      - name: Upload Asset
+      - name: 🎁⏫ Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: artifact-windows-x86_64
@@ -66,7 +66,7 @@ jobs:
       - name: Run Zip
         run: zip -r linux.zip output/*
 
-      - name: Upload Asset
+      - name: 🎁⏫ Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: artifact-linux
@@ -92,7 +92,7 @@ jobs:
       - name: Run Zip
         run: zip -r macos.zip output/*
 
-      - name: Upload Asset
+      - name: 🎁⏫ Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: artifact-macos
@@ -135,7 +135,7 @@ jobs:
   #       run: 7z a -r windows_x86.zip output
   #       ## powershell Compress-Archive out x.zip
   #
-  #     - name: Upload Asset
+  #     - name: 🎁⏫ Upload Artifact
   #       uses: actions/upload-artifact@v4
   #       with:
   #         name: windows_x86.zip
@@ -165,7 +165,7 @@ jobs:
   #     - name: Run Zip
   #       run: zip -r android.zip output/*
   #
-  #     - name: Upload Asset
+  #     - name: 🎁⏫ Upload Artifact
   #       uses: actions/upload-artifact@v4
   #       with:
   #         name: android.zip
@@ -188,7 +188,7 @@ jobs:
         run: |
           mkdir -p download-artifacts
 
-      - name: download asset linux
+      - name: 🎁⏬ Download Artifact
         uses: actions/download-artifact@v4
         with:
           path: download-artifacts
@@ -211,7 +211,7 @@ jobs:
           version: ${{ steps.tag_name.outputs.current_version }}
           path: ./CHANGELOG.md
 
-      - name: Release
+      - name: 🚀 Release
         uses: softprops/action-gh-release@v1
         with:
           draft: true
