@@ -49,6 +49,7 @@ sed -i 's/for ac_option in --version -v -V -qversion; do/for ac_option in --vers
 
 # configure
 # ./configure --with-crypto-lib=none --disable-tcl CFLAGS="-DSQLITE_HAS_CODEC -DSQLCIPHER_CRYPTO_OPENSSL -I#{open_ssl_dir}/include #{open_ssl_dir}/bin/libcrypto-1_1-x64.dll -L#{pwd} -static-libgcc" LDFLAGS="-llibcrypto-1_1-x64"
+ls -al ${open_ssl_dir}
 cp ${libcrypto_fpath} ./
 ls -al libcrypto-1_1.dll
 ./configure --with-pic --disable-tcl --enable-tempstore=yes --enable-threadsafe=yes --with-crypto-lib=none CFLAGS="-DSQLITE_HAS_CODEC -DSQLITE_TEMP_STORE=2 -DSQLITE_THREADSAFE=1 -DSQLCIPHER_CRYPTO_OPENSSL -I${open_ssl_dir}/include -static-libgcc ${libcrypto_fpath}" LDFLAGS="-lcrypto-1_1 -L${open_ssl_dir}/bin -L${DIR_SOURCE}"

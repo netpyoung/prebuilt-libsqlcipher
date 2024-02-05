@@ -11,7 +11,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install openssl(x86)
-        run: choco install openssl -y --version "OpenSSL 3.2.1" --forceX86
+        run: choco install --forceX86 openssl -y --version "3.2.1"
 
       - name: Prepare build system(MSYS2)
         uses: msys2/setup-msys2@v2
