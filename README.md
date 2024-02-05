@@ -6,22 +6,24 @@
   - VERSION=v4.5.5
 - try [SqlCipher4Unity3D](https://github.com/netpyoung/SqlCipher4Unity3D).
 
-| Platforms | Arch        | action  | device tested? |
-| --------- | ----------- | ------- | -------------- |
-| Windows   | x86         | o       | not yet        |
-| Windows   | x86_64      | o       | not yet        |
-| Windows   | x86_arm64   | x       | not yet        |
-| Linux     | x86_64      | o       | not yet        |
-| macOS     | x86_64      | o       | not yet        |
-| iOS       | 64bit       | o       | not yet        |
-| tvOS      | 64bit       | o       | not yet        |
-| Android   | armeabi-v7a | o       | not yet        |
-| Android   | arm64_v8a   | o       | not yet        |
-| Android   | x86         | o       | not yet        |
-| Android   | x86_64      | o       | not yet        |
-| Linux     | x86         | no plan | not yet        |
-| WebGL     | .           | no plan | not yet        |
-| Other     | .           | no plan | not yet        |
+| Platforms | Arch        | action  |
+| --------- | ----------- | ------- |
+| Windows   | x86_64      | o       |
+| Windows   | x86_arm64   | x       |
+| Windows   | x86         | x       |
+| Linux     | x86_64      | o       |
+| Linux     | x86         | x       |
+| macOS     | x86_64      | o       |
+| iOS       | 64bit       | o       |
+| tvOS      | 64bit       | o       |
+| Android   | armeabi-v7a | x       |
+| Android   | arm64_v8a   | x       |
+| Android   | x86         | x       |
+| Android   | x86_64      | x       |
+| WebGL     | .           | no plan |
+| Other     | .           | no plan |
+
+- for android, there is <https://github.com/sqlcipher/android-database-sqlcipher>
 
 ## Preface
 
