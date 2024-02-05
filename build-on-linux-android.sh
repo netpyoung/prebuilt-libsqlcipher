@@ -10,12 +10,12 @@ ROOT=$(pwd)
 DIR_SOURCE=${ROOT}/sqlcipher
 DIR_OUTPUT=${ROOT}/output
 
-MINIMUM_ANDROID_SDK_VERSION=16
+MINIMUM_ANDROID_SDK_VERSION=21
 MINIMUM_ANDROID_64_BIT_SDK_VERSION=21
 
 
 # [src] openssl
-OEPNSSL_VERSION=OpenSSL_1_1_1l
+OEPNSSL_VERSION=openssl-3.2.1
 git clone -b ${OEPNSSL_VERSION} --depth 1 https://github.com/openssl/openssl && cd openssl
 
 OPENSSL_CONFIGURE_OPTIONS="-fPIC -fstack-protector-all no-idea no-camellia \
@@ -29,7 +29,7 @@ OPENSSL_CONFIGURE_OPTIONS="-fPIC -fstack-protector-all no-idea no-camellia \
 
 TOOLCHAIN_SYSTEM=linux-x86_64
 
-for ARCH in armv7-a arm64 x86 x86_64 
+for ARCH in armv7-a # arm64 x86 x86_64 
 do
     case "${ARCH}" in
         armv7-a)
@@ -58,6 +58,8 @@ do
     git checkout -f
     git clean -Xdf
 
+    ANDROID_NDK_ROOT=${ANDROID_NDK_HOME}
+    TOOLCHAIN=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/${TOOLCHAIN_SYSTEM}
     TOOLCHAIN_BIN_PATH=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/${TOOLCHAIN_SYSTEM}/bin
     PATH=${TOOLCHAIN_BIN_PATH}:${PATH} ./Configure ${CONFIGURE_ARCH} \
                                         -D__ANDROID_API__=${ANDROID_API_VERSION} \
@@ -65,7 +67,10 @@ do
                                         ${OPENSSL_CONFIGURE_OPTIONS}
 
     make clean
-    PATH=${TOOLCHAIN_BIN_PATH}:${PATH} make build_libs
+        PATH=${TOOLCHAIN_BIN_PATH}:${PATH} make 
+        CC=$TOOLCHAIN/bin/$TARGET$API-clang \
+        AR=$TOOLCHAIN/bin/llvm-ar \
+        RANLIB=$TOOLCHAIN/bin/llvm-ranlib
 
     mkdir -p ${DIR_OUTPUT}/${ARCH}/
     mv libcrypto.a ${DIR_OUTPUT}/${ARCH}/
@@ -110,7 +115,7 @@ ANDROID_NDK_SYSROOT=${ANDROID_NDK_TOOLCHAIN}/sysroot
 # [src] sqlcipher
 git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git && cd $DIR_SOURCE
 
-for ARCH in armv7-a arm64 x86 x86_64 
+for ARCH in armv7-a # arm64 x86 x86_64 
 do
     case "${ARCH}" in
         armv7-a)
@@ -172,6 +177,8 @@ do
     ./configure ${SQLCHIPER_CONFIGURE_OPTIONS} CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
 
     # compile
+    # ref: https://github.com/sfackler/rust-openssl/issues/2154#issuecomment-1910717183
+    sed -E -i '' -e '/[.]hidden.*OPENSSL_armcap_P/d' -e '/[.]extern.*OPENSSL_armcap_P/ {p; s/extern/hidden/; }' crypto/*arm*pl crypto/*/asm/*arm*pl
     make clean
     make sqlite3.c
 

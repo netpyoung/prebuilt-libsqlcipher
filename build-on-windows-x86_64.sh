@@ -26,14 +26,14 @@ git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git && 
 # /c/PROGRA~2 # Program Files (x86)
 ## choco install openssl -y --x86   # C:\OpenSSL-Win32 # x86    
 ## choco install openssl -y         # C:\OpenSSL-Win64 # x86_64 
-## C:\OpenSSL-Win32\bin\libcrypto-1_1.dll     # x86
-## C:\OpenSSL-Win64\bin\libcrypto-1_1-x64.dll # x86_64
+## C:\OpenSSL-Win32\bin\libcrypto-3.dll     # x86
+## C:\OpenSSL-Win64\bin\libcrypto-3-x64.dll # x86_64
 
-open_ssl_dir='/c/PROGRA~1/OpenSSL-Win64'                     # x86_64
-libcrypto_fpath=${open_ssl_dir}/bin/libcrypto-1_1-x64.dll    # x86_64
+open_ssl_dir='/c/PROGRA~1/OpenSSL'                         # x86_64
+libcrypto_fpath=${open_ssl_dir}/bin/libcrypto-3-x64.dll    # x86_64
 
 # open_ssl_dir='/c/PROGRA~2/OpenSSL-Win32'                     # x86
-# libcrypto_fpath=${open_ssl_dir}/bin/libcrypto-1_1.dll        # x86
+# libcrypto_fpath=${open_ssl_dir}/bin/libcrypto-3.dll        # x86
 
 sed -i 's/for ac_option in --version -v -V -qversion; do/for ac_option in --version -v; do/' configure
 
@@ -47,8 +47,9 @@ sed -i 's/for ac_option in --version -v -V -qversion; do/for ac_option in --vers
 ## pacman --noconfirm --needed -S tcl
 
 # configure
+ls -al ${open_ssl_dir}
 cp ${libcrypto_fpath} ./
-ls -al libcrypto-1_1-x64.dll
+ls -al libcrypto-3-x64.dll
 #./configure --with-pic --disable-tcl --enable-tempstore=yes --enable-threadsafe=yes --with-crypto-lib=none CFLAGS="-DSQLITE_HAS_CODEC -DSQLITE_TEMP_STORE=2 -DSQLITE_THREADSAFE=1 -DSQLCIPHER_CRYPTO_OPENSSL -I${open_ssl_dir}/include -static-libgcc ${libcrypto_fpath}" LDFLAGS="-lcrypto-1_1 -L${open_ssl_dir}/bin -L${DIR_SOURCE}"
 ./configure --with-pic --disable-tcl --enable-tempstore=yes --enable-threadsafe=yes --with-crypto-lib=none CFLAGS="-DSQLITE_HAS_CODEC -DSQLITE_TEMP_STORE=2 -DSQLITE_THREADSAFE=1 -DSQLCIPHER_CRYPTO_OPENSSL -I${open_ssl_dir}/include -static-libgcc ${libcrypto_fpath}" LDFLAGS="-lcrypto-1_1-x64 -L${open_ssl_dir}/bin -L${DIR_SOURCE}"
 
@@ -69,7 +70,7 @@ ls -al
 
 mkdir -p ${DIR_OUTPUT}
 cp ${libsqlcipher_fpath} ${DIR_OUTPUT}/sqlcipher.dll
-cp ${libcrypto_fpath}    ${DIR_OUTPUT}/libcrypto-1_1-x64.dll
+cp ${libcrypto_fpath}    ${DIR_OUTPUT}/libcrypto-3-x64.dll
 
 ls -al ${DIR_OUTPUT}
 

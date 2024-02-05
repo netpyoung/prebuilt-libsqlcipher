@@ -8,10 +8,10 @@ jobs:
     runs-on: windows-2019
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install openssl(x86)
-        run: choco install openssl -y --x86
+        run: choco install --forceX86 openssl -y --version "3.2.1"
 
       - name: Prepare build system(MSYS2)
         uses: msys2/setup-msys2@v2
