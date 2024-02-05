@@ -40,7 +40,7 @@ jobs:
         ## powershell Compress-Archive out x.zip
 
       - name: Upload Asset
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows_x86.zip
           path: ./windows_x86.zip
@@ -78,7 +78,7 @@ jobs:
         run: 7z a -r windows_x86_64.zip output
 
       - name: Upload Asset
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows_x86_64.zip
           path: ./windows_x86_64.zip
@@ -103,7 +103,7 @@ jobs:
         run: zip -r linux.zip output/*
 
       - name: Upload Asset
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux.zip
           path: ./linux.zip
@@ -132,7 +132,7 @@ jobs:
         run: zip -r android.zip output/*
 
       - name: Upload Asset
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: android.zip
           path: ./android.zip
@@ -155,7 +155,7 @@ jobs:
         run: zip -r macos.zip output/*
 
       - name: Upload Asset
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           path: ./macos.zip
           name: macos.zip
