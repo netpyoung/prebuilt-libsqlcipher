@@ -29,7 +29,7 @@ git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git && 
 ## C:\OpenSSL-Win32\bin\libcrypto-3.dll     # x86
 ## C:\OpenSSL-Win64\bin\libcrypto-3-x64.dll # x86_64
 
-open_ssl_dir='/c/PROGRA~1/OpenSSL-Win64'                     # x86_64
+open_ssl_dir='/c/PROGRA~1/OpenSSL'                         # x86_64
 libcrypto_fpath=${open_ssl_dir}/bin/libcrypto-3-x64.dll    # x86_64
 
 # open_ssl_dir='/c/PROGRA~2/OpenSSL-Win32'                     # x86
