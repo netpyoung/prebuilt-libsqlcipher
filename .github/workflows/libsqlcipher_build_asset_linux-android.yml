@@ -12,9 +12,9 @@ jobs:
 
       - name: Setup Android NDK
         id: setup-ndk
-        uses: nttld/setup-ndk@v1.0.6
+        uses: nttld/setup-ndk@v1
         with:
-          ndk-version: r21e
+          ndk-version: r25c
 
       - name: Run Buildscript
         run: sh ./build-on-linux-android.sh
