@@ -15,15 +15,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install openssl(x86_64)
+        shell: cmd
         run: |
-          choco install openssl -y --version "3.5.3" --x86_64
-          cmd /c mklink /D  "C:\OpenSSL-Win64" "C:\Program Files\OpenSSL-Win64"
+          choco install openssl -y --version "3.5.3" --x86_64 --no-progress
+          where openssl
+          mklink /D "C:\OpenSSL-Win64" "C:\Program Files\OpenSSL"
 
       - name: Run Buildscript
-        run: build-on-windows.bat
+        shell: cmd
+        run: |
+          call "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vs_path.txt
+          set /p VSPATH=<vs_path.txt
+          call "%VSPATH%\VC\Auxiliary\Build\vcvarsall.bat" x64
+          build-on-windows.bat
 
       - name: Install packages
-        run: choco install 7zip.portable
+        run: choco install 7zip.portable -y --no-progress
 
       - name: Run Zip
         run: 7z a -r windows-x86_64.zip output

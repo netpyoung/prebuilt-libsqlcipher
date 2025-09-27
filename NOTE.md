@@ -40,3 +40,5 @@ SQLITE_EXTRA_SHUTDOWN=sqlcipher_extra_shutdown
   
 
   
+  - https://greenday96.blogspot.com/2025/06/sqlcipher-windows-build.html
+  - https://github.com/sqlitebrowser/sqlitebrowser/blob/master/.github/workflows/cppcmake-windows.yml
