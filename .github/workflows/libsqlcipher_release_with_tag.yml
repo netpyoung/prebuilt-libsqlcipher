@@ -15,22 +15,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install openssl(x86_64)
-        run: choco install openssl -y --version "3.2.1" --x86_64
-
-      - name: Prepare build system(MSYS2)
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          msystem: MINGW64
-          install: >-
-            git
-            base-devel
-            mingw-w64-x86_64-gcc
-            tcl
+        run: |
+          choco install openssl -y --version "3.5.3" --x86_64
+          cmd /c mklink /D  "C:\OpenSSL-Win64" "C:\Program Files\OpenSSL-Win64"
 
       - name: Run Buildscript
-        shell: msys2 {0}
-        run: sh ./build-on-windows-x86_64.sh
+        run: build-on-windows.bat
 
       - name: Install packages
         run: choco install 7zip.portable
@@ -100,76 +90,6 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
-  ## ======================================================================================================
-  
-  # NOTE(pyoung): deprecated
-  # upload_asset_windows_x86:
-  #   name: Upload asset on Windows (x86)
-  #   runs-on: windows-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Install openssl(x86)
-  #       run: choco install openssl -y --version "3.2.1" --forceX86
-  #
-  #     - name: Prepare build system(MSYS2)
-  #       uses: msys2/setup-msys2@v2
-  #       with:
-  #         update: true
-  #         msystem: MINGW32
-  #         install: >-
-  #           git
-  #           base-devel
-  #           mingw-w64-i686-gcc
-  #           tcl
-  #
-  #     - name: Run Buildscript
-  #       shell: msys2 {0}
-  #       run: sh ./build-on-windows-x86.sh
-  #
-  #     - name: Install packages
-  #       run: choco install 7zip.portable
-  #
-  #     - name: Run Zip
-  #       run: 7z a -r windows_x86.zip output
-  #       ## powershell Compress-Archive out x.zip
-  #
-  #     - name: 🎁⏫ Upload Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: windows_x86.zip
-  #         path: ./windows_x86.zip
-
-  ## ======================================================================================================
-  # NOTE(pyoung): deprecated
-  # upload_asset_android:
-  #   name: Upload asset on Linux (Android)
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #
-  #     - name: Setup Android NDK
-  #       id: setup-ndk
-  #       uses: nttld/setup-ndk@v1
-  #       with:
-  #         ndk-version: r21e
-  #
-  #     - name: Run Buildscript
-  #       run: sh ./build-on-linux-android.sh
-  #       env:
-  #         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
-  #         ANDROID_NDK_TOOLCHAIN: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64
-  #
-  #     - name: Run Zip
-  #       run: zip -r android.zip output/*
-  #
-  #     - name: 🎁⏫ Upload Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: android.zip
-  #         path: ./android.zip
 
   ## ======================================================================================================
   release:
