@@ -1,0 +1,226 @@
+name: Release with Tag for libsqlcipher
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  ## ======================================================================================================
+  upload_asset_windows_x86_64:
+    name: Upload asset on Windows (x86_64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install openssl(x86_64)
+        run: choco install openssl -y --version "3.2.1" --x86_64
+
+      - name: Prepare build system(MSYS2)
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: MINGW64
+          install: >-
+            git
+            base-devel
+            mingw-w64-x86_64-gcc
+            tcl
+
+      - name: Run Buildscript
+        shell: msys2 {0}
+        run: sh ./build-on-windows-x86_64.sh
+
+      - name: Install packages
+        run: choco install 7zip.portable
+
+      - name: Run Zip
+        run: 7z a -r windows-x86_64.zip output
+
+      - name: 🎁⏫ Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-windows-x86_64
+          path: windows-x86_64.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  ## ======================================================================================================
+  upload_asset_linux:
+    name: Upload asset on Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependency
+        run: |
+          sudo apt-get install -y tcl-dev
+          sudo apt-get install -y libssl-dev
+
+      - name: Run Buildscript
+        run: sh ./build-on-linux.sh
+  
+      - name: Run Zip
+        run: zip -r linux.zip output/*
+
+      - name: 🎁⏫ Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-linux
+          path: linux.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  ## ======================================================================================================
+  upload_asset_macos_ios_tvos:
+    name: Upload asset on macOS (macOS / iOS / tvOS)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependency
+        run: brew install coreutils automake
+
+      - name: Run Buildscript
+        run: sh ./build-on-mac.sh
+
+      - name: Run Zip
+        run: zip -r macos.zip output/*
+
+      - name: 🎁⏫ Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-macos
+          path: macos.zip
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+  ## ======================================================================================================
+  
+  # NOTE(pyoung): deprecated
+  # upload_asset_windows_x86:
+  #   name: Upload asset on Windows (x86)
+  #   runs-on: windows-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Install openssl(x86)
+  #       run: choco install openssl -y --version "3.2.1" --forceX86
+  #
+  #     - name: Prepare build system(MSYS2)
+  #       uses: msys2/setup-msys2@v2
+  #       with:
+  #         update: true
+  #         msystem: MINGW32
+  #         install: >-
+  #           git
+  #           base-devel
+  #           mingw-w64-i686-gcc
+  #           tcl
+  #
+  #     - name: Run Buildscript
+  #       shell: msys2 {0}
+  #       run: sh ./build-on-windows-x86.sh
+  #
+  #     - name: Install packages
+  #       run: choco install 7zip.portable
+  #
+  #     - name: Run Zip
+  #       run: 7z a -r windows_x86.zip output
+  #       ## powershell Compress-Archive out x.zip
+  #
+  #     - name: 🎁⏫ Upload Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: windows_x86.zip
+  #         path: ./windows_x86.zip
+
+  ## ======================================================================================================
+  # NOTE(pyoung): deprecated
+  # upload_asset_android:
+  #   name: Upload asset on Linux (Android)
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Setup Android NDK
+  #       id: setup-ndk
+  #       uses: nttld/setup-ndk@v1
+  #       with:
+  #         ndk-version: r21e
+  #
+  #     - name: Run Buildscript
+  #       run: sh ./build-on-linux-android.sh
+  #       env:
+  #         ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+  #         ANDROID_NDK_TOOLCHAIN: ${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64
+  #
+  #     - name: Run Zip
+  #       run: zip -r android.zip output/*
+  #
+  #     - name: 🎁⏫ Upload Artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: android.zip
+  #         path: ./android.zip
+
+  ## ======================================================================================================
+  release:
+    needs: [upload_asset_windows_x86_64, upload_asset_linux, upload_asset_macos_ios_tvos]
+    name: Write Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            CHANGELOG.md
+
+      - name: Make Directory For Download Artifacts
+        run: |
+          mkdir -p download-artifacts
+
+      - name: 🎁⏬ Download Artifact
+        uses: actions/download-artifact@v4
+        with:
+          path: download-artifacts
+
+      - name: Log artifact download
+        run: |
+          ls -alh
+          ls -alh download-artifacts
+  
+      - name: Get Tagname
+        id: tag_name
+        run: |
+          echo "current_version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Changelog Reader
+        id: changelog_reader
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ steps.tag_name.outputs.current_version }}
+          path: ./CHANGELOG.md
+
+      - name: 🚀 Release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          prerelease: false
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref }}
+          body: ${{ steps.changelog_reader.outputs.changes }}
+          fail_on_unmatched_files: true
+          files: |
+            ./download-artifacts/artifact-linux/linux.zip
+            ./download-artifacts/artifact-windows-x86_64/windows-x86_64.zip
+            ./download-artifacts/artifact-macos/macos.zip
