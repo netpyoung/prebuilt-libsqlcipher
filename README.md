@@ -3,25 +3,31 @@
 :package: Prebuilt native SQLCipher for Unity3D
 
 - Prebuilt native [sqlcipher/sqlcipher](https://github.com/sqlcipher/sqlcipher) library for Unity3D.
-  - VERSION=v4.5.6
+  - VERSION=v4.10.0
 - try [SqlCipher4Unity3D](https://github.com/netpyoung/SqlCipher4Unity3D).
 
-| Platforms | Arch        | action  |
-| --------- | ----------- | ------- |
-| Windows   | x86_64      | o       |
-| Windows   | x86_arm64   | x       |
-| Windows   | x86         | x       |
-| Linux     | x86_64      | o       |
-| Linux     | x86         | x       |
-| macOS     | x86_64      | o       |
-| iOS       | 64bit       | o       |
-| tvOS      | 64bit       | o       |
-| Android   | armeabi-v7a | x       |
-| Android   | arm64_v8a   | x       |
-| Android   | x86         | x       |
-| Android   | x86_64      | x       |
-| WebGL     | .           | no plan |
-| Other     | .           | no plan |
+| Platforms        | Arch        | action  |
+| ---------------- | ----------- | ------- |
+| Windows          | x86_64      | o       |
+| Windows          | x86_arm64   | x       |
+| Windows          | x86         | x       |
+| Linux            | x86_64      | o       |
+| Linux            | x86         | x       |
+| macOS            | x86_64      | o       |
+| macOS            | x86_64      | o       |
+| macOS            | arm64       | o       |
+| iOS              | armv7       | x       |
+| iOS              | armv7s      | x       |
+| iOS              | arm64       | o       |
+| iOS (Simulator)  | x86_64      | o       |
+| tvOS             | arm64       | o       |
+| tvOS (Simulator) | x86_64      | o       |
+| Android          | armeabi-v7a | x       |
+| Android          | arm64_v8a   | x       |
+| Android          | x86         | x       |
+| Android          | x86_64      | x       |
+| WebGL            | .           | no plan |
+| Other            | .           | no plan |
 
 - for android, there is <https://github.com/sqlcipher/android-database-sqlcipher>
 
