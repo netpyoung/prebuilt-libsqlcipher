@@ -69,7 +69,7 @@ export NM="${TOOLCHAIN_BIN}/nm"
 export LD="${TOOLCHAIN_BIN}/ld"
 
 # [src] libsodium
-# git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git 
+git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git 
 cd $DIR_SOURCE
 
 ##---------------------------------------------------------------------------------------------
