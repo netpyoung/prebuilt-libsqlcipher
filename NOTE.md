@@ -102,6 +102,9 @@ Undefined symbol: _sqlite3_win32_set_directory8
 macOS 15.4 - strchrnul
 Checking for strchrnul...ok
 sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
+nm - display name list (symbol table)
+  -g     Display only global (external) symbols.
+nm -g lipo/sqlcipher.dylib | grep strchrnul
 
 
 -mmacos-version-min
