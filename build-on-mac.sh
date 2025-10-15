@@ -69,7 +69,7 @@ export NM="${TOOLCHAIN_BIN}/nm"
 export LD="${TOOLCHAIN_BIN}/ld"
 
 # [src] libsodium
-git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git 
+# git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git 
 cd $DIR_SOURCE
 
 ##---------------------------------------------------------------------------------------------
@@ -100,6 +100,7 @@ LDFLAGS="\
 
 # mmacos-version-min, MACOSX_DEPLOYMENT_TARGET?
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make
@@ -133,6 +134,7 @@ CFLAGS=" \
 
 # mmacos-version-min, MACOSX_DEPLOYMENT_TARGET?
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make
@@ -191,6 +193,7 @@ LDFLAGS="\
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make clean
@@ -233,6 +236,7 @@ LDFLAGS="\
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make clean
@@ -289,6 +293,7 @@ LDFLAGS="\
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make clean
@@ -331,6 +336,7 @@ LDFLAGS="\
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make clean

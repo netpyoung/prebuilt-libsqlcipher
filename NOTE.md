@@ -98,3 +98,7 @@ Undefined symbol: _sqlite3_win32_set_directory
 Undefined symbol: _sqlite3_win32_set_directory16
 Undefined symbol: _sqlite3_win32_set_directory8
 
+
+macOS 15.4 - strchrnul
+Checking for strchrnul...ok
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
