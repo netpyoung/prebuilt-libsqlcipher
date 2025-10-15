@@ -102,3 +102,67 @@ Undefined symbol: _sqlite3_win32_set_directory8
 macOS 15.4 - strchrnul
 Checking for strchrnul...ok
 sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
+
+
+-mmacos-version-min
+-mios-version-min
+-mios-simulator-version-min
+-mtvos-version-min
+-mtvos-simulator-version-min
+-mxros-version-min # 비전OS
+-mxros-simulator-version-min
+
+
+- arm에도 여러개가 있는데 arm64만 하면 될듯
+  - armv6 
+  - armv7
+  - armv7s
+  - armv8
+  - arm64
+  - arm64e 
+
+
+bundle -> dylib
+Unity 공식 문서와 포럼에서도 .bundle 형식을 macOS 플러그인으로 권장했으며
+.dylib의 안정적인 지원은 Unity 2019.3부터 시작되었으며, Unity 2020.1 이후로 완전히 문제없이 사용할 수 있습니다.
+
+lipo
+lipo -create -output ${DIR_OUTPUT}/macOS/lipo/sqlcipher.bundle \
+  ${DIR_OUTPUT}/macOS/arm64/sqlcipher.bundle                   \
+  ${DIR_OUTPUT}/macOS/x86_64/sqlcipher.bundle
+lipo -info ${DIR_OUTPUT}/macOS/lipo/sqlcipher.bundle
+https://developer.apple.com/documentation/apple-silicon/building-a-universal-macos-binary
+https://ss64.com/mac/lipo.html
+“lipo” = “liposuction (지방흡입)” → fat binary에서 지방(fat)을 흡입(thin)한다 😄
+iOS용과 iOS-simulator용을 같은 아키텍처라도 병합할 수 없게됨.
+-  CPUARCHOPT란것도 있는데 lipo 랑 비슷한 역활.
+   -  [MacOS Apple Silicon 에서 universal binary 만들기](https://rageworx.pe.kr/1959)
+
+XCFramework
+https://developer.apple.com/documentation/xcode/creating-a-multi-platform-binary-framework-bundle
+xcodebuild -create-xcframework \
+  -library ios/libMy.a \
+  -library ios-simulator/libMy.a \
+  -output MyLib.xcframework
+plutil -p MyLib.xcframework/Info.plist
+
+loader_path
+install_name_tool -id @loader_path/sqlcipher.dylib ${DIR_OUTPUT}/macOS/${ARCH}/sqlcipher.dylib
+otool -L macOS/arm64/sqlcipher.dylib
+@rpath - runpath search path
+@loader_path
+@executable_path
+
+
+
+macos역시 xcframework로 하려고 하는데, 폴더에 있어서 그런지 못불러오네
+mkdir -p ${DIR_OUTPUT}/macOS/
+
+xcodebuild -create-xcframework \
+  -library ${DIR_OUTPUT}/macOS/arm64/sqlcipher.dylib \
+  -output ${DIR_OUTPUT}/macOS/sqlcipher-dynamic.xcframework
+
+plutil -p ${DIR_OUTPUT}/macOS/sqlcipher-dynamic.xcframework/Info.plist
+
+
+TBD 파일은 macOS의 Xcode 개발 환경에서 사용하는 텍스트 기반 동적 라이브러리 스텁(Text-based Dynamic Library Stub) 파일입니다. 이는 .dylib 파일(실제 바이너리 라이브러리)을 텍스트 형식으로 요약한 버전으로, Xcode가 앱을 빌드할 때 링커(연결기)가 필요한 심볼과 정보를 참조할 수 있게 해줍니다.
