@@ -3,26 +3,20 @@
 set -e
 
 #---------------------------------------------------------------------------------------------
-# | Platforms        | Arch   | action? |
-# | ---------------- | ------ | ------- |
-# | macOS            | x86_64 | o       |
-# | macOS            | arm64  | o       |
-# | iOS              | armv7  | x       |
-# | iOS              | armv7s | x       |
-# | iOS              | arm64  | o       |
-# | iOS (Simulator)  | x86_64 | o       |
-# | tvOS             | arm64  | o       |
-# | tvOS (Simulator) | x86_64 | o       |
-#
-# lipo iOS (arm64, x86_64(simulator))
-# lipo tvOS(arm64, x86_64(simulator))
-#
-# armv6 
-# armv7
-# armv7s
-# armv8
-# arm64
-# arm64e 
+# | Platforms            | Arch    |
+# | -------------------- | ------- |
+# | macOS                | arm64   |
+# | macOS                | x86_64  |
+
+# | Platforms            | Arch   |
+# | -------------------- | ------ |
+# | iOS                  | arm64  |
+# | iOS (Simulator)      | arm64 |
+# | tvOS                 | arm64  |
+# | tvOS (Simulator)     | arm64 |
+# | visionOS             | arm64  |
+# | visionOS (Simulator) | arm64 |
+
 #---------------------------------------------------------------------------------------------
 
 
@@ -73,43 +67,6 @@ git clone -b ${VERSION} --depth 1 https://github.com/sqlcipher/sqlcipher.git
 cd $DIR_SOURCE
 
 ##---------------------------------------------------------------------------------------------
-## macOS            (x86_64)
-##---------------------------------------------------------------------------------------------
-echo "============================================================= macOS            (x86_64)"
-# CPUARCHOPT? [MacOS Apple Silicon 에서 universal binary 만들기](https://rageworx.pe.kr/1959)
-git clean -Xdf
-
-# configure
-ARCH=x86_64
-HOST="x86_64-apple-darwin"
-
-CFLAGS=" \
--arch ${ARCH}  \
--mmacos-version-min=10.10 \
--I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include \
--L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib \
--F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks \
-"
-
-LDFLAGS="\
--framework Security \
--framework Foundation \
--F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks \
--L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib \
-"
-
-# mmacos-version-min, MACOSX_DEPLOYMENT_TARGET?
-./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
-
-# compile
-make
-
-# copy
-libsqlcipher_fpath=`greadlink -f libsqlite3.dylib`
-mkdir -p ${DIR_OUTPUT}/macOS/${ARCH}
-cp ${libsqlcipher_fpath} ${DIR_OUTPUT}/macOS/${ARCH}/sqlcipher.bundle
-
-##---------------------------------------------------------------------------------------------
 ## macOS            (arm64)
 ##---------------------------------------------------------------------------------------------
 echo "============================================================= macOS            (arm64)"
@@ -117,22 +74,34 @@ git clean -Xdf
 
 # configure
 ARCH=arm64
+MACOS_MIN_SDK_VERSION=13.0
 HOST="aarch64-apple-darwin"
+OS_COMPILER="MacOSX"
 
-ISYSROOT=`xcrun --sdk macosx --show-sdk-path`
+export CROSS_TOP="${DEVELOPER}/Platforms/${OS_COMPILER}.platform/Developer"
+export CROSS_SDK="${OS_COMPILER}.sdk"
+export SYSROOT="${CROSS_TOP}/SDKs/${CROSS_SDK}"
+echo "SYSROOT: ${SYSROOT}"
 
 CFLAGS=" \
 -arch ${ARCH}  \
 -target arm64-apple-macos \
 -isysroot ${ISYSROOT} \
--mmacos-version-min=13.0 \
--I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include \
--L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib \
--F/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks \
+-mmacos-version-min=${MACOS_MIN_SDK_VERSION} \
+-I${SYSROOT}/usr/include \
+-L${SYSROOT}/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
 "
 
-# mmacos-version-min, MACOSX_DEPLOYMENT_TARGET?
+LDFLAGS="\
+-framework Security \
+-framework Foundation \
+-L${SYSROOT}/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
+"
+
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make
@@ -140,25 +109,72 @@ make
 # copy
 libsqlcipher_fpath=`greadlink -f libsqlite3.dylib`
 mkdir -p ${DIR_OUTPUT}/macOS/${ARCH}
-cp ${libsqlcipher_fpath} ${DIR_OUTPUT}/macOS/${ARCH}/sqlcipher.bundle
+cp ${libsqlcipher_fpath} ${DIR_OUTPUT}/macOS/${ARCH}/sqlcipher.dylib
+
+
+##---------------------------------------------------------------------------------------------
+## macOS            (x86_64)
+##---------------------------------------------------------------------------------------------
+echo "============================================================= macOS            (x86_64)"
+git clean -Xdf
+
+# configure
+ARCH=x86_64
+HOST="x86_64-apple-darwin"
+OS_COMPILER="MacOSX"
+
+export CROSS_TOP="${DEVELOPER}/Platforms/${OS_COMPILER}.platform/Developer"
+export CROSS_SDK="${OS_COMPILER}.sdk"
+export SYSROOT="${CROSS_TOP}/SDKs/${CROSS_SDK}"
+echo "SYSROOT: ${SYSROOT}"
+
+CFLAGS=" \
+-arch ${ARCH}  \
+-isysroot ${ISYSROOT} \
+-mmacos-version-min=10.10 \
+-I${SYSROOT}/usr/include \
+-L${SYSROOT}/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
+"
+
+LDFLAGS="\
+-framework Security \
+-framework Foundation \
+-L${SYSROOT}/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
+"
+
+# mmacos-version-min, MACOSX_DEPLOYMENT_TARGET?
+./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
+
+# compile
+make
+
+# copy
+libsqlcipher_fpath=`greadlink -f libsqlite3.dylib`
+mkdir -p ${DIR_OUTPUT}/macOS/${ARCH}
+cp ${libsqlcipher_fpath} ${DIR_OUTPUT}/macOS/${ARCH}/sqlcipher.dylib
+
 
 #---------------------------------------------------------------------------------------------
-# lipo macOS (x86_64, arm64)
+# lipo macOS (arm64, x86_64)
 #---------------------------------------------------------------------------------------------
-echo "=========================================================== lipo macOS (x86_64, arm64)"
+echo "=========================================================== lipo macOS (arm64, x86_64)"
 
 mkdir -p ${DIR_OUTPUT}/macOS/lipo
 
-lipo -create -output ${DIR_OUTPUT}/macOS/lipo/sqlcipher.bundle \
-  ${DIR_OUTPUT}/macOS/arm64/sqlcipher.bundle                   \
-  ${DIR_OUTPUT}/macOS/x86_64/sqlcipher.bundle
+lipo -create -output ${DIR_OUTPUT}/macOS/lipo/sqlcipher.dylib \
+  ${DIR_OUTPUT}/macOS/arm64/sqlcipher.dylib                   \
+  ${DIR_OUTPUT}/macOS/x86_64/sqlcipher.dylib
 
-lipo -info ${DIR_OUTPUT}/macOS/lipo/sqlcipher.bundle
+lipo -info ${DIR_OUTPUT}/macOS/lipo/sqlcipher.dylib
 
 #---------------------------------------------------------------------------------------------
-# loader_path macOS (x86_64, arm64)
+# loader_path macOS (arm64, x86_64)
 #---------------------------------------------------------------------------------------------
-install_name_tool -id @loader_path/sqlcipher.bundle ${DIR_OUTPUT}/macOS/lipo/sqlcipher.bundle
+install_name_tool -id @loader_path/sqlcipher.dylib ${DIR_OUTPUT}/macOS/lipo/sqlcipher.dylib
+
 
 #---------------------------------------------------------------------------------------------
 # iOS              (arm64)
@@ -174,23 +190,26 @@ HOST="arm-apple-darwin"
 
 export CROSS_TOP="${DEVELOPER}/Platforms/${OS_COMPILER}.platform/Developer"
 export CROSS_SDK="${OS_COMPILER}.sdk"
+export SYSROOT="${CROSS_TOP}/SDKs/${CROSS_SDK}"
+echo "SYSROOT: ${SYSROOT}"
 
 CFLAGS="\
 -arch ${ARCH} \
--isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
+-isysroot ${SYSROOT} \
 -mios-version-min=${IOS_MIN_SDK_VERSION} \
--L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib \
--F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks \
+-F${SYSROOT}/System/Library/Frameworks \
+-L${SYSROOT}/usr/lib \
 "
 
 LDFLAGS="\
 -framework Security \
 -framework Foundation \
--F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks \
--L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
+-L${SYSROOT}/usr/lib \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make clean
@@ -203,36 +222,39 @@ mkdir -p ${DIR_OUTPUT}/iOS/${ARCH}
 cp libsqlite3.a ${DIR_OUTPUT}/iOS/${ARCH}/libsqlcipher.a
 
 #---------------------------------------------------------------------------------------------
-# iOS (Simulator)  (x86_64)
+# iOS (Simulator)  (arm64)
 #---------------------------------------------------------------------------------------------
-echo "============================================================= iOS (Simulator)  (x86_64)"
+echo "============================================================= iOS (Simulator)  (arm64)"
 git clean -Xdf
 
 # configure
-ARCH=x86_64
+ARCH=arm64
 IOS_MIN_SDK_VERSION=10.0
 OS_COMPILER="iPhoneSimulator"
-HOST="x86_64-apple-darwin"
+HOST="arm64-apple-darwin"
 
 export CROSS_TOP="${DEVELOPER}/Platforms/${OS_COMPILER}.platform/Developer"
 export CROSS_SDK="${OS_COMPILER}.sdk"
+export SYSROOT="${CROSS_TOP}/SDKs/${CROSS_SDK}"
+echo "SYSROOT: ${SYSROOT}"
 
 CFLAGS="\
 -arch ${ARCH} \
--isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
--mios-version-min=${IOS_MIN_SDK_VERSION} \
--F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks \
--L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/lib \
+-isysroot ${SYSROOT} \
+-mios-simulator-version-min=${IOS_MIN_SDK_VERSION} \
+-F${SYSROOT}/System/Library/Frameworks \
+-L${SYSROOT}/usr/lib \
 "
 
 LDFLAGS="\
 -framework Security \
 -framework Foundation \
--F/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/System/Library/Frameworks \
--L/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator.sdk/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
+-L${SYSROOT}/usr/lib \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make clean
@@ -241,22 +263,8 @@ make sqlite3ext.h
 make libsqlite3.a
 
 # copy
-mkdir -p ${DIR_OUTPUT}/iOS/${ARCH}
-cp libsqlite3.a ${DIR_OUTPUT}/iOS/${ARCH}/libsqlcipher.a
-
-#---------------------------------------------------------------------------------------------
-# lipo iOS (armv7, armv7s, arm64, x86_64(simulator))
-#---------------------------------------------------------------------------------------------
-echo "=================================== lipo iOS (armv7, armv7s, arm64, x86_64(simulator))"
-
-mkdir -p ${DIR_OUTPUT}/iOS/lipo
-
-lipo -create -output ${DIR_OUTPUT}/iOS/lipo/libsqlcipher.a     \
-  ${DIR_OUTPUT}/iOS/arm64/libsqlcipher.a                       \
-  ${DIR_OUTPUT}/iOS/x86_64/libsqlcipher.a
-
-lipo -info ${DIR_OUTPUT}/iOS/lipo/libsqlcipher.a
-
+mkdir -p ${DIR_OUTPUT}/iOS/sim_${ARCH}
+cp libsqlite3.a ${DIR_OUTPUT}/iOS/sim_${ARCH}/libsqlcipher.a
 
 #---------------------------------------------------------------------------------------------
 # tvOS             (arm64)
@@ -272,23 +280,26 @@ HOST="arm-apple-darwin"
 
 export CROSS_TOP="${DEVELOPER}/Platforms/${OS_COMPILER}.platform/Developer"
 export CROSS_SDK="${OS_COMPILER}.sdk"
+export SYSROOT="${CROSS_TOP}/SDKs/${CROSS_SDK}"
+echo "SYSROOT: ${SYSROOT}"
 
 CFLAGS="\
 -arch ${ARCH} \
--isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
+-isysroot ${SYSROOT} \
 -mtvos-version-min=${TVOS_MIN_SDK_VERSION} \
--F/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/System/Library/Frameworks \
--L/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
+-L${SYSROOT}/usr/lib \
 "
 
 LDFLAGS="\
 -framework Security \
 -framework Foundation \
--F/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/System/Library/Frameworks \
--L/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
+-L${SYSROOT}/usr/lib \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make clean
@@ -301,36 +312,39 @@ mkdir -p ${DIR_OUTPUT}/tvOS/${ARCH}
 cp libsqlite3.a ${DIR_OUTPUT}/tvOS/${ARCH}/libsqlcipher.a
 
 #---------------------------------------------------------------------------------------------
-# tvOS (Simulator) (x86_64)
+# tvOS (Simulator) (arm64)
 #---------------------------------------------------------------------------------------------
-echo "============================================================= tvOS (Simulator) (x86_64)"
+echo "============================================================= tvOS (Simulator) (arm64)"
 git clean -Xdf
 
 # configure
-ARCH=x86_64
+ARCH=arm64
 TVOS_MIN_SDK_VERSION=10.0
 OS_COMPILER="AppleTVSimulator"
-HOST="x86_64-apple-darwin"
+HOST="arm-apple-darwin"
 
 export CROSS_TOP="${DEVELOPER}/Platforms/${OS_COMPILER}.platform/Developer"
 export CROSS_SDK="${OS_COMPILER}.sdk"
+export SYSROOT="${CROSS_TOP}/SDKs/${CROSS_SDK}"
+echo "SYSROOT: ${SYSROOT}"
 
 CFLAGS="\
 -arch ${ARCH} \
--isysroot ${CROSS_TOP}/SDKs/${CROSS_SDK} \
--mtvos-version-min=${TVOS_MIN_SDK_VERSION} \
--F/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/System/Library/Frameworks \
--L/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/usr/lib \
+-isysroot ${SYSROOT} \
+-mtvos-simulator-version-min=${TVOS_MIN_SDK_VERSION} \
+-F${SYSROOT}/System/Library/Frameworks \
+-L${SYSROOT}/usr/lib \
 "
 
 LDFLAGS="\
 -framework Security \
 -framework Foundation \
--F/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/System/Library/Frameworks \
--L/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/usr/lib \
+-F${SYSROOT}/System/Library/Frameworks \
+-L${SYSROOT}/usr/lib \
 "
 
 ./configure ${COMPILE_OPTION} --host="$HOST" CFLAGS="${CFLAGS} ${SQLITE_CFLAGS}" LDFLAGS="${LDFLAGS}"
+sed -i '' 's/#define HAVE_STRCHRNUL 1/#define HAVE_STRCHRNUL 0/' sqlite_cfg.h
 
 # compile
 make clean
@@ -339,24 +353,37 @@ make sqlite3ext.h
 make libsqlite3.a
 
 # copy
-mkdir -p ${DIR_OUTPUT}/tvOS/${ARCH}
-cp libsqlite3.a ${DIR_OUTPUT}/tvOS/${ARCH}/libsqlcipher.a
+mkdir -p ${DIR_OUTPUT}/tvOS/sim_${ARCH}
+cp libsqlite3.a ${DIR_OUTPUT}/tvOS/sim_${ARCH}/libsqlcipher.a
+
 
 #---------------------------------------------------------------------------------------------
-# lipo tvOS(               arm64, x86_64(simulator))
+# XCFramework
+# iOS (arm64, arm64(simulator))
+# tvOS (arm64, arm64(simulator))
 #---------------------------------------------------------------------------------------------
-echo "=================================== lipo tvOS(               arm64, x86_64(simulator))"
-mkdir -p ${DIR_OUTPUT}/tvOS/lipo
+echo "=================================== XCFramework iOS/tvOS (arm64, arm64(simulator))"
 
-lipo -create -output ${DIR_OUTPUT}/tvOS/lipo/libsqlcipher.a     \
-  ${DIR_OUTPUT}/tvOS/arm64/libsqlcipher.a                       \
-  ${DIR_OUTPUT}/tvOS/x86_64/libsqlcipher.a
+mkdir -p ${DIR_OUTPUT}/iOS/
 
-lipo -info ${DIR_OUTPUT}/tvOS/lipo/libsqlcipher.a
+xcodebuild -create-xcframework \
+  -library ${DIR_OUTPUT}/iOS/arm64/libsqlcipher.a                       \
+  -library ${DIR_OUTPUT}/iOS/sim_arm64/libsqlcipher.a                   \
+  -library ${DIR_OUTPUT}/tvOS/arm64/libsqlcipher.a                      \
+  -library ${DIR_OUTPUT}/tvOS/sim_arm64/libsqlcipher.a                  \
+  -output ${DIR_OUTPUT}/libsqlcipher.xcframework
 
+plutil -p ${DIR_OUTPUT}/libsqlcipher.xcframework/Info.plist
 
+#---------------------------------------------------------------------------------------------
+# sha256
+#---------------------------------------------------------------------------------------------
+shasum -a 256 ${DIR_OUTPUT}/macOS/lipo/sqlcipher.dylib
 
-
+shasum -a 256 ${DIR_OUTPUT}/libsqlcipher.xcframework/ios-arm64/libsqlcipher.a
+shasum -a 256 ${DIR_OUTPUT}/libsqlcipher.xcframework/ios-arm64-simulator/libsqlcipher.a
+shasum -a 256 ${DIR_OUTPUT}/libsqlcipher.xcframework/tvos-arm64/libsqlcipher.a
+shasum -a 256 ${DIR_OUTPUT}/libsqlcipher.xcframework/tvos-arm64-simulator/libsqlcipher.a
 
 
 #---------------------------------------------------------------------------------------------

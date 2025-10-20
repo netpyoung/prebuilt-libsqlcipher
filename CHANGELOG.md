@@ -2,6 +2,17 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.0.10]
+
+- libsqlcipher version v4.10.0
+- fix: simulator problem
+- change: for static library - lipo => xcframework
+
+## [0.0.9]
+
+- libsqlcipher version v4.10.0
+- fix: strchrnul problem(caused by macOS 15.4 release)
+
 ## [0.0.8]
 
 - libsqlcipher version v4.10.0
