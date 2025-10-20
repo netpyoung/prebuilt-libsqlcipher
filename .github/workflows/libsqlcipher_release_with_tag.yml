@@ -9,37 +9,44 @@ jobs:
   ## ======================================================================================================
   upload_asset_windows_x86_64:
     name: Upload asset on Windows (x86_64)
+    # ref: availabel image - https://github.com/actions/runner-images
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        # https://github.com/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Install openssl(x86_64)
         shell: cmd
+        # https://community.chocolatey.org/packages/openssl
         run: |
           choco install openssl -y --version "3.5.3" --x86_64 --no-progress
           where openssl
           mklink /D "C:\OpenSSL-Win64" "C:\Program Files\OpenSSL"
 
-      - name: Run Buildscript
-        shell: cmd
-        run: |
-          call "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vs_path.txt
-          set /p VSPATH=<vs_path.txt
-          call "%VSPATH%\VC\Auxiliary\Build\vcvarsall.bat" x64
-          build-on-windows.bat
+# NOTE(pyoung): this step is replaced by ilammy/msvc-dev-cmd
+#      - name: Install Dependency x86_64
+#        shell: cmd
+#        run: |
+#          call "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vs_path.txt
+#          set /p VSPATH=<vs_path.txt
+#          call "%VSPATH%\VC\Auxiliary\Build\vcvarsall.bat" x64
 
-      - name: Install packages
-        run: choco install 7zip.portable -y --no-progress
-
-      - name: Run Zip
-        run: 7z a -r windows-x86_64.zip output
+      - name: Install Dependency x86_64
+        # https://github.com/ilammy/msvc-dev-cmd
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+            arch: x86_64
+      - name: Run Buildscript - x64
+        shell: pwsh
+        run: .\build-on-windows.ps1
 
       - name: 🎁⏫ Upload Artifact
+        # https://github.com/actions/upload-artifact
         uses: actions/upload-artifact@v4
         with:
           name: artifact-windows-x86_64
-          path: windows-x86_64.zip
+          path: output
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
