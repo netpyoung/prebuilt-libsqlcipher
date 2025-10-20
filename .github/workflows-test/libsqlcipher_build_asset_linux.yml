@@ -3,12 +3,15 @@ name: Build asset on Linux
 on: [push]
 
 jobs:
-  build_asset_linux:
-    name: Build asset on Linux
-    runs-on: ubuntu-20.04
+  ## ======================================================================================================
+  upload_asset_linux:
+    name: Upload asset on Linux
+    # ref: availabel image - https://github.com/actions/runner-images
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        # https://github.com/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Install Dependency
         run: |
@@ -18,3 +21,11 @@ jobs:
       - name: Run Buildscript
         run: sh ./build-on-linux.sh
 
+      - name: 🎁⏫ Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-linux
+          path: output
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0

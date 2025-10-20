@@ -3,12 +3,15 @@ name: Build asset on macOS
 on: [push]
 
 jobs:
-  build_asset_linux:
-    name: Build asset on macOS
-    runs-on: macos-10.15
+  ## ======================================================================================================
+  upload_asset_macos_ios_tvos:
+    name: Upload asset on macOS (macOS / iOS / tvOS)
+    # ref: availabel image - https://github.com/actions/runner-images
+    runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        # https://github.com/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Install Dependency
         run: brew install coreutils automake
@@ -16,3 +19,11 @@ jobs:
       - name: Run Buildscript
         run: sh ./build-on-mac.sh
 
+      - name: 🎁⏫ Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-macos
+          path: output
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
