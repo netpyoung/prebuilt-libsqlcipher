@@ -6,20 +6,23 @@ jobs:
   ## ======================================================================================================
   upload_asset_windows_x86_64:
     name: Upload asset on Windows (x86_64)
+    # ref: availabel image - https://github.com/actions/runner-images
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        # https://github.com/actions/checkout
+        uses: actions/checkout@v5
 
       - name: Install openssl(x86_64)
         shell: cmd
+        # https://community.chocolatey.org/packages/openssl
         run: |
           choco install openssl -y --version "3.5.3" --x86_64 --no-progress
           where openssl
           mklink /D "C:\OpenSSL-Win64" "C:\Program Files\OpenSSL"
 
-      # https://github.com/ilammy/msvc-dev-cmd
       - name: Install Dependency x86_64
+        # https://github.com/ilammy/msvc-dev-cmd
         uses: ilammy/msvc-dev-cmd@v1
         with:
             arch: x86_64
@@ -36,6 +39,7 @@ jobs:
 #          build-on-windows.bat
 
       - name: 🎁⏫ Upload Artifact
+        # https://github.com/actions/upload-artifact
         uses: actions/upload-artifact@v4
         with:
           name: artifact-windows-x86_64

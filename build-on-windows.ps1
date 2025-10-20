@@ -16,23 +16,24 @@ Set-Location $sqlcipherDir
 # ---------------------------------------------------------------------------------------------
 $sqlite3dll = "sqlcipher.dll"
 $ltlinkopts = "C:\OpenSSL-Win64\lib\VC\x64\MT\libcrypto.lib"
-$optFeatureFlags = @"
--DSQLITE_TEMP_STORE=2 ^
--DSQLITE_HAS_CODEC=1 ^
--DSQLITE_ENABLE_FTS3=1 ^
--DSQLITE_ENABLE_FTS5=1 ^
--DSQLITE_ENABLE_FTS3_PARENTHESIS=1 ^
--DSQLITE_ENABLE_STAT4=1 ^
--DSQLITE_SOUNDEX=1 ^
--DSQLITE_ENABLE_JSON1=1 ^
--DSQLITE_ENABLE_GEOPOLY=1 ^
--DSQLITE_ENABLE_RTREE=1 ^
--DSQLCIPHER_CRYPTO_OPENSSL=1 ^
--DSQLITE_MAX_ATTACHED=125 ^
--IC:\OpenSSL-Win64\include ^
--DSQLITE_EXTRA_INIT=sqlcipher_extra_init ^
+$optFeatureFlagsRaw = @'
+-DSQLITE_TEMP_STORE=2
+-DSQLITE_HAS_CODEC=1
+-DSQLITE_ENABLE_FTS3=1
+-DSQLITE_ENABLE_FTS5=1
+-DSQLITE_ENABLE_FTS3_PARENTHESIS=1
+-DSQLITE_ENABLE_STAT4=1
+-DSQLITE_SOUNDEX=1
+-DSQLITE_ENABLE_JSON1=1
+-DSQLITE_ENABLE_GEOPOLY=1
+-DSQLITE_ENABLE_RTREE=1
+-DSQLCIPHER_CRYPTO_OPENSSL=1
+-DSQLITE_MAX_ATTACHED=125
+-IC:\OpenSSL-Win64\include
+-DSQLITE_EXTRA_INIT=sqlcipher_extra_init
 -DSQLITE_EXTRA_SHUTDOWN=sqlcipher_extra_shutdown
-"@
+'@
+$optFeatureFlags = ($optFeatureFlagsRaw -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }) -join ' '
 
 # ---------------------------------------------------------------------------------------------
 # Windows (x86_64)
