@@ -1,0 +1,45 @@
+name: upload_asset_windows_x86_64
+
+on: [push]
+
+jobs:
+  ## ======================================================================================================
+  upload_asset_windows_x86_64:
+    name: Upload asset on Windows (x86_64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install openssl(x86_64)
+        shell: cmd
+        run: |
+          choco install openssl -y --version "3.5.3" --x86_64 --no-progress
+          where openssl
+          mklink /D "C:\OpenSSL-Win64" "C:\Program Files\OpenSSL"
+
+      # https://github.com/ilammy/msvc-dev-cmd
+      - name: Install Dependency x86_64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+            arch: x86_64
+      - name: Run Buildscript - x64
+        shell: pwsh
+        run: .\build-on-windows.ps1
+
+#      - name: Run Buildscript
+#        shell: cmd
+#        run: |
+#          call "%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath > vs_path.txt
+#          set /p VSPATH=<vs_path.txt
+#          call "%VSPATH%\VC\Auxiliary\Build\vcvarsall.bat" x64
+#          build-on-windows.bat
+
+      - name: 🎁⏫ Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-windows-x86_64
+          path: output
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
