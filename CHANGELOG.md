@@ -2,6 +2,11 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.0.11]
+
+- change: useu buntu-22.04 instead of ubuntu-latest - ref: https://github.com/netpyoung/SqlCipher4Unity3D/issues/54
+- change: use build-on-windows.ps1 for windows build
+
 ## [0.0.10]
 
 - libsqlcipher version v4.10.0
