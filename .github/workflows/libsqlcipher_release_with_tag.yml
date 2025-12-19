@@ -55,7 +55,7 @@ jobs:
   upload_asset_linux:
     name: Upload asset on Linux
     # ref: availabel image - https://github.com/actions/runner-images
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         # https://github.com/actions/checkout
