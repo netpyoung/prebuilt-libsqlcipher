@@ -2,6 +2,10 @@
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
+## [0.0.12]
+
+- fix: link path on linux
+
 ## [0.0.11]
 
 - change: useu buntu-22.04 instead of ubuntu-latest - ref: https://github.com/netpyoung/SqlCipher4Unity3D/issues/54
