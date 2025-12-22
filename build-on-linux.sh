@@ -64,5 +64,14 @@ mkdir -p ${DIR_OUTPUT}
 cp ${libsqlcipher_fpath} ${DIR_OUTPUT}/libsqlcipher.so
 cp ${libcrypto_fpath} ${DIR_OUTPUT}/libcrypto.so
 
+echo "== before"
+ldd ${DIR_OUTPUT}/libsqlcipher.so
+
+patchelf --replace-needed libcrypto.so.3 libcrypto.so ${DIR_OUTPUT}/libsqlcipher.so
+patchelf --set-rpath '$ORIGIN' ${DIR_OUTPUT}/libsqlcipher.so
+
+echo "== after"
+ldd ${DIR_OUTPUT}/libsqlcipher.so
+
 # zip -r lib.zip libsodium/.libs/*
 ls -al ${DIR_OUTPUT}
